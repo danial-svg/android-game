@@ -17,13 +17,16 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      # نصب صریح پلتفرم android-29 که ابزار به آن نیاز دارد
       - name: Install Android Platform 29
         run: |
           yes | sdkmanager "platforms;android-29"
 
       - name: Install cargo-quad-apk
         run: cargo install cargo-quad-apk
+        
+      # حذف فایل lock ناسازگار برای ساخت خودکار توسط کارگو
+      - name: Remove incompatible Cargo.lock
+        run: rm -f Cargo.lock
         
       - name: Build APK
         env:
