@@ -12,7 +12,7 @@ jobs:
       
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-linux-android
+          targets: aarch64-linux-android,armv7-linux-androideabi
           
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
@@ -21,12 +21,19 @@ jobs:
         run: |
           yes | sdkmanager "platforms;android-29"
 
-      # دانلود و تنظیم مستقیم نسخه سازگار NDK (نسخه r25c)
       - name: Download and Setup NDK r25c
         run: |
           wget -q https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
           unzip -q android-ndk-r25c-linux.zip
           echo "NDK_HOME=$PWD/android-ndk-r25c" >> $GITHUB_ENV
+
+      # رفع خطای پیدا نکردن فایل ar با ساخت لینک کمکی
+      - name: Fix missing tool symlink for cargo-quad-apk
+        run: |
+          BIN_DIR="$PWD/android-ndk-r25c/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          cd "$BIN_DIR"
+          ln -sf llvm-ar arm-linux-androideabi-ar
+          ln -sf llvm-strip arm-linux-androideabi-strip
 
       - name: Install cargo-quad-apk
         run: cargo install cargo-quad-apk
@@ -36,7 +43,7 @@ jobs:
         
       - name: Build APK
         run: |
-          echo "Using NDK_HOME: $NDK_HOME"
+          export NDK_HOME=$ANDROID_NDK_HOME
           cargo quad-apk build --release
         
       - name: Upload Artifact
