@@ -8,3 +8,4 @@ macroquad = "0.4"
 [package.metadata.android]
 min_sdk_version = 21
 target_sdk_version = 29
+build_targets = ["armv7-linux-androideabi", "aarch64-linux-android"]
