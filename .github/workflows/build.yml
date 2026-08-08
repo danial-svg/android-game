@@ -35,6 +35,11 @@ jobs:
           ln -sf ld.lld arm-linux-androideabi-ld
           ln -sf llvm-ar arm-linux-androideabi-ar
           ln -sf llvm-strip arm-linux-androideabi-strip
+          ln -sf llvm-readelf arm-linux-androideabi-readelf
+          ln -sf ld.lld aarch64-linux-android-ld
+          ln -sf llvm-ar aarch64-linux-android-ar
+          ln -sf llvm-strip aarch64-linux-android-strip
+          ln -sf llvm-readelf aarch64-linux-android-readelf
 
       - name: Fix missing libunwind (NDK 23+ removed libgcc)
         run: |
