@@ -14,13 +14,14 @@ jobs:
         with:
           targets: aarch64-linux-android
           
+      # تنظیم و نصب خودکار Android SDK و NDK
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install cargo-quad-apk
         run: cargo install cargo-quad-apk
         
       - name: Build APK
-        # تنظیم مسیر NDK پیش‌فرض روی سرور گیت‌هاب
-        env:
-          NDK_HOME: /usr/local/lib/android/sdk/ndk/current
         run: cargo quad-apk build --release
         
       - name: Upload Artifact
