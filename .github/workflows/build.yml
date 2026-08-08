@@ -9,15 +9,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android
+          
       - name: Install cargo-quad-apk
         run: cargo install cargo-quad-apk
+        
       - name: Build APK
+        # تنظیم مسیر NDK پیش‌فرض روی سرور گیت‌هاب
+        env:
+          NDK_HOME: /usr/local/lib/android/sdk/ndk/current
         run: cargo quad-apk build --release
+        
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: my-game-apk
+          name: android-apk
           path: target/android/release/apk/*.apk
