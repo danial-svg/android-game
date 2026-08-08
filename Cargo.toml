@@ -5,3 +5,6 @@ edition = "2021"
 
 [dependencies]
 macroquad = "0.4"
+[package.metadata.android]
+min_sdk_version = 21
+target_sdk_version = 29

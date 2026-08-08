@@ -42,12 +42,13 @@ jobs:
         run: rm -f Cargo.lock
         
       - name: Build APK
+        env:
+          NDK_HOME: ${{ github.workspace }}/android-ndk-r25c
         run: |
-          export NDK_HOME=$ANDROID_NDK_HOME
           cargo quad-apk build --release
         
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: target/android/release/apk/*.apk
+          path: target/android/release/*.apk
