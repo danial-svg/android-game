@@ -14,8 +14,10 @@ jobs:
         with:
           targets: aarch64-linux-android
           
-      - name: Set up Android SDK
+      - name: Set up Android SDK & NDK
         uses: android-actions/setup-android@v3
+        with:
+          ndk-version: 25.2.9519653
 
       - name: Install Android Platform 29
         run: |
@@ -24,14 +26,14 @@ jobs:
       - name: Install cargo-quad-apk
         run: cargo install cargo-quad-apk
         
-      # حذف فایل lock ناسازگار برای ساخت خودکار توسط کارگو
       - name: Remove incompatible Cargo.lock
         run: rm -f Cargo.lock
         
       - name: Build APK
-        env:
-          NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
-        run: cargo quad-apk build --release
+        run: |
+          export NDK_HOME=$ANDROID_NDK_HOME
+          echo "Using NDK_HOME: $NDK_HOME"
+          cargo quad-apk build --release
         
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
