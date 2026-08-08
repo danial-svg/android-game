@@ -39,17 +39,27 @@ jobs:
       - name: Fix missing libunwind (NDK 23+ removed libgcc)
         run: |
           NDK="$PWD/android-ndk-r25c"
-          CLANG_DIR=$(find "$NDK/toolchains/llvm/prebuilt/linux-x86_64/lib/clang" -maxdepth 1 -mindepth 1 -type d)
-          echo "Using clang resource dir: $CLANG_DIR"
+
+          ARM_UNWIND=$(find "$NDK" -type f -path "*/lib/linux/arm/libunwind.a" | head -n1)
+          AARCH64_UNWIND=$(find "$NDK" -type f -path "*/lib/linux/aarch64/libunwind.a" | head -n1)
+
+          echo "arm libunwind.a: $ARM_UNWIND"
+          echo "aarch64 libunwind.a: $AARCH64_UNWIND"
+
+          if [ -z "$ARM_UNWIND" ] || [ -z "$AARCH64_UNWIND" ]; then
+            echo "Could not locate libunwind.a inside NDK" >&2
+            find "$NDK" -name "libunwind.a" >&2
+            exit 1
+          fi
 
           # armeabi-v7a
           for d in "$NDK"/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/arm-linux-androideabi/*/; do
-            cp "$CLANG_DIR/lib/linux/arm/libunwind.a" "$d/libunwind.a"
+            cp "$ARM_UNWIND" "$d/libunwind.a"
           done
 
           # arm64-v8a
           for d in "$NDK"/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/*/; do
-            cp "$CLANG_DIR/lib/linux/aarch64/libunwind.a" "$d/libunwind.a"
+            cp "$AARCH64_UNWIND" "$d/libunwind.a"
           done
 
       - name: Install cargo-quad-apk
