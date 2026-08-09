@@ -18,9 +18,9 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android Platform 29
+      - name: Install Android Platform 30
         run: |
-          yes | sdkmanager "platforms;android-29"
+          yes | sdkmanager "platforms;android-30"
 
       - name: Download and Setup NDK r25c
         run: |
