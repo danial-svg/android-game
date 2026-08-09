@@ -7,86 +7,25 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: notfl3/cargo-apk
+
     steps:
+      # ایمیج notfl3/cargo-apk بیس مینیمالی داره، پس اول git رو نصب می‌کنیم
+      # تا actions/checkout بتونه ریپازیتوری رو clone کنه
+      - name: Install git
+        run: apt-get update && apt-get install -y git
+
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 8 (required for rt.jar by cargo-quad-apk)
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '8'
-
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android,armv7-linux-androideabi
-          
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android Platform 29
-        run: |
-          yes | sdkmanager "platforms;android-29"
-
-      - name: Download and Setup NDK r25c
-        run: |
-          wget -q https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
-          unzip -q android-ndk-r25c-linux.zip
-          echo "NDK_HOME=$PWD/android-ndk-r25c" >> $GITHUB_ENV
-
-      # رفع خطای پیدا نکردن لینکر و ابزارهای مورد نیاز cargo-quad-apk
-      - name: Fix missing tool symlinks for cargo-quad-apk
-        run: |
-          BIN_DIR="$PWD/android-ndk-r25c/toolchains/llvm/prebuilt/linux-x86_64/bin"
-          cd "$BIN_DIR"
-          ln -sf ld.lld arm-linux-androideabi-ld
-          ln -sf llvm-ar arm-linux-androideabi-ar
-          ln -sf llvm-strip arm-linux-androideabi-strip
-          ln -sf llvm-readelf arm-linux-androideabi-readelf
-          ln -sf ld.lld aarch64-linux-android-ld
-          ln -sf llvm-ar aarch64-linux-android-ar
-          ln -sf llvm-strip aarch64-linux-android-strip
-          ln -sf llvm-readelf aarch64-linux-android-readelf
-
-      - name: Fix missing libunwind (NDK 23+ removed libgcc)
-        run: |
-          NDK="$PWD/android-ndk-r25c"
-
-          ARM_UNWIND=$(find "$NDK" -type f -path "*/lib/linux/arm/libunwind.a" | head -n1)
-          AARCH64_UNWIND=$(find "$NDK" -type f -path "*/lib/linux/aarch64/libunwind.a" | head -n1)
-
-          echo "arm libunwind.a: $ARM_UNWIND"
-          echo "aarch64 libunwind.a: $AARCH64_UNWIND"
-
-          if [ -z "$ARM_UNWIND" ] || [ -z "$AARCH64_UNWIND" ]; then
-            echo "Could not locate libunwind.a inside NDK" >&2
-            find "$NDK" -name "libunwind.a" >&2
-            exit 1
-          fi
-
-          # armeabi-v7a
-          for d in "$NDK"/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/arm-linux-androideabi/*/; do
-            cp "$ARM_UNWIND" "$d/libunwind.a"
-          done
-
-          # arm64-v8a
-          for d in "$NDK"/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/*/; do
-            cp "$AARCH64_UNWIND" "$d/libunwind.a"
-          done
-
-      - name: Install cargo-quad-apk
-        run: cargo install cargo-quad-apk
-        
       - name: Remove incompatible Cargo.lock
         run: rm -f Cargo.lock
-        
+
       - name: Build APK
-        env:
-          NDK_HOME: ${{ github.workspace }}/android-ndk-r25c
-        run: |
-          cargo quad-apk build --release
-        
+        run: cargo quad-apk build --release
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: target/android/release/*.apk
+          path: target/android-artifacts/release/apk/*.apk
