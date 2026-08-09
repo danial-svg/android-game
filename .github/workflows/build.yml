@@ -10,16 +10,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 8 (required for rt.jar by cargo-quad-apk)
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '8'
-
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi
 
+      # از JDK پیش‌فرض رانر (17+) استفاده می‌کنیم چون sdkmanager جدید بهش نیاز داره
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
@@ -78,6 +73,13 @@ jobs:
 
       - name: Remove incompatible Cargo.lock
         run: rm -f Cargo.lock
+
+      # فقط همینجا سوییچ به JDK 8 می‌کنیم، چون فقط cargo-quad-apk به rt.jar نیاز داره
+      - name: Switch to JDK 8 (required for rt.jar by cargo-quad-apk)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
 
       - name: Build APK
         env:
